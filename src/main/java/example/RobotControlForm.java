@@ -1,6 +1,12 @@
 package example;
 
+import com.amazonaws.services.iot.client.AWSIotDevice;
 import com.amazonaws.services.iot.client.AWSIotMqttClient;
+import com.amazonaws.services.iot.client.AWSIotQos;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import util.IoTConfig;
@@ -10,6 +16,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
+import util.SampleUtil;
 import util.SslUtil;
 import org.eclipse.paho.client.mqttv3.*;
 
@@ -35,8 +42,9 @@ public class RobotControlForm extends JFrame {
     JPanel buttonsPanel;
     JPanel textPanel;
 
-    MqttClient client;
+  //  MqttClient client;
     AWSIotMqttClient iotClient;
+    AWSIotDevice device;
 
     public RobotControlForm(String arg) {
         super("Robot Controller");
@@ -45,28 +53,36 @@ public class RobotControlForm extends JFrame {
         try {
             IoTConfig config = new IoTConfig(arg);
 
-           // KeyStorePasswordPair pair = SampleUtil.getKeyStorePasswordPair(certificateFile, privateKeyFile);
-            //iotClient = new AWSIotMqttClient(clientEndpoint, clientId, pair.keyStore, pair.keyPassword);
+            SampleUtil.KeyStorePasswordPair pair = SampleUtil.getKeyStorePasswordPair(config.get(AWS_IOT_CERTIFICATE_FILENAME), config.get(AWS_IOT_PRIVATE_KEY_FILENAME));
+            iotClient = new AWSIotMqttClient(config.get(AWS_IOT_MQTT_HOST), config.get(AWS_IOT_MQTT_CLIENT_ID), pair.keyStore, pair.keyPassword);
+            iotClient.connect();
 
-            SSLSocketFactory sslSocketFactory = SslUtil.getSocketFactory(
-                    config.get(AWS_IOT_ROOT_CA_FILENAME),
-                    config.get(AWS_IOT_CERTIFICATE_FILENAME),
-                    config.get(AWS_IOT_PRIVATE_KEY_FILENAME));
-            MqttConnectOptions options = new MqttConnectOptions();
-            options.setSocketFactory(sslSocketFactory);
-            options.setCleanSession(true);
+            MyTopic topic = new MyTopic(RECEIVE_TOPIC, AWSIotQos.QOS0, textLog);
+            iotClient.subscribe(topic);
 
-            final String serverUrl = "ssl://" + config.get(AWS_IOT_MQTT_HOST) + ":" + config.get(AWS_IOT_MQTT_PORT);
-            final String clientId = config.get(AWS_IOT_MQTT_CLIENT_ID);
+            device = new AWSIotDevice(config.get(AWS_IOT_MY_THING_NAME));
+            iotClient.attach(device);
 
-            client = new MqttClient(serverUrl, clientId);
-            client.setCallback(new Callback(textLog));
-            client.connect(options);
-            client.subscribe(RECEIVE_TOPIC, QOS_LEVEL);
+            String state = device.get();
+            textLog.append("Current devise state:\n");
 
+            JSONParser parser = new JSONParser();
+            try{
+                Object obj = parser.parse(state);
+                JSONObject jsonObject = (JSONObject) obj;
+                JSONObject objState = (JSONObject)jsonObject.get("state");
+                JSONObject objReported = (JSONObject)objState.get("reported");
 
-            //client.disconnect(QUIESCE_TIMEOUT);
-            //client.close();
+                textLog.append("\tState: " + objReported.get("state") + "\n");
+                textLog.append("\tWall Detected: " + objReported.get("wallDetected") + "\n");
+                textLog.append("\tDirection: " + objReported.get("direction") + "\n");
+                textLog.append("\tPosition: " + objReported.get("position") + "\n");
+
+            } catch(ParseException pe){
+                System.out.println("position: " + pe.getPosition());
+                System.out.println(pe);
+            }
+
         } catch (Exception e) {
             LOGGER.error(e.getMessage(), e);
             System.exit(-1);
@@ -107,7 +123,8 @@ public class RobotControlForm extends JFrame {
                 try {
                     LOGGER.info("go");
                     textLog.append("> go\n");
-                    client.publish(PUBLISH_TOPIC, new MqttMessage("Go".getBytes()));
+                    iotClient.publish(PUBLISH_TOPIC, AWSIotQos.QOS0, "Go");
+                    //client.publish(PUBLISH_TOPIC, new MqttMessage("Go".getBytes()));
                 } catch (Exception ex) {
                     LOGGER.error(ex.getMessage(), ex);
                     System.exit(-1);
@@ -121,7 +138,8 @@ public class RobotControlForm extends JFrame {
                 try {
                     LOGGER.info("left");
                     textLog.append("> left\n");
-                    client.publish(PUBLISH_TOPIC, new MqttMessage("Turn Left".getBytes()));
+                    iotClient.publish(PUBLISH_TOPIC, AWSIotQos.QOS0, "Turn Left");
+                    //client.publish(PUBLISH_TOPIC, new MqttMessage("Turn Left".getBytes()));
                 } catch (Exception ex) {
                     LOGGER.error(ex.getMessage(), ex);
                     System.exit(-1);
@@ -135,7 +153,8 @@ public class RobotControlForm extends JFrame {
                 try {
                     LOGGER.info("right");
                     textLog.append("> right\n");
-                    client.publish(PUBLISH_TOPIC, new MqttMessage("Turn Right".getBytes()));
+                    iotClient.publish(PUBLISH_TOPIC, AWSIotQos.QOS0, "Turn Right");
+                    //client.publish(PUBLISH_TOPIC, new MqttMessage("Turn Right".getBytes()));
                 } catch (Exception ex) {
                     LOGGER.error(ex.getMessage(), ex);
                     System.exit(-1);
@@ -149,7 +168,8 @@ public class RobotControlForm extends JFrame {
                 try {
                     LOGGER.info("stop");
                     textLog.append("> stop\n");
-                    client.publish(PUBLISH_TOPIC, new MqttMessage("Stop".getBytes()));
+                    iotClient.publish(PUBLISH_TOPIC, AWSIotQos.QOS0, "Stop");
+                   // client.publish(PUBLISH_TOPIC, new MqttMessage("Stop".getBytes()));
                 } catch (Exception ex) {
                     LOGGER.error(ex.getMessage(), ex);
                     System.exit(-1);
