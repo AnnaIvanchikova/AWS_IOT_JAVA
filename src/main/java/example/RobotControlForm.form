@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<form xmlns="http://www.intellij.com/uidesigner/form/" version="1" bind-to-class="example.RobotControlForm">
+  <grid id="27dc6" layout-manager="BorderLayout" hgap="0" vgap="0">
+    <constraints>
+      <xy x="227" y="205" width="502" height="332"/>
+    </constraints>
+    <properties/>
+    <border type="none"/>
+    <children>
+      <component id="fa78a" class="javax.swing.JButton" binding="turnLeftButton" default-binding="true">
+        <constraints border-constraint="West"/>
+        <properties>
+          <text value="Turn Left"/>
+        </properties>
+      </component>
+      <component id="530a6" class="javax.swing.JButton" binding="goButton" default-binding="true">
+        <constraints border-constraint="Center"/>
+        <properties>
+          <text value="Go"/>
+        </properties>
+      </component>
+      <component id="90896" class="javax.swing.JButton" binding="turnRightButton" default-binding="true">
+        <constraints border-constraint="East"/>
+        <properties>
+          <text value="Turn Right"/>
+        </properties>
+      </component>
+      <component id="9ce71" class="javax.swing.JButton" binding="stopButton" default-binding="true">
+        <constraints border-constraint="South"/>
+        <properties>
+          <hideActionText value="false"/>
+          <text value="Stop"/>
+        </properties>
+      </component>
+    </children>
+  </grid>
+</form>
