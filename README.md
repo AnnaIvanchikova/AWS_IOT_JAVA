@@ -19,7 +19,7 @@ Project in Java for the AWS IoT service to be used on any internet connectivity 
         </dependency>
     ```
 - Register an IoT device on the AWS IoT dashboard and generate and attach the necessary certificates and policies to it.
-- Download the client certificate, client private and the root CA certificate 
+- Download the client certificate, client private and the root CA certificate and place them in the root folder
 
 
 ## Use the AWS IoT device SDK
