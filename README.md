@@ -4,8 +4,28 @@ Project in Java for the AWS IoT service to be used on any internet connectivity 
 ### Prerequisities
 
 - Maven is the only requirement for building the project. Dependencies are managed by Maven.
+
+  Add the following dependencies to the POM file of your Maven project.
+    ```
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-iot-device-sdk-java</artifactId>
+            <version>1.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.googlecode.json-simple</groupId>
+            <artifactId>json-simple</artifactId>
+            <version>1.1</version>
+        </dependency>
+    ```
 - Register an IoT device on the AWS IoT dashboard and generate and attach the necessary certificates and policies to it.
 - Download the client certificate, client private and the root CA certificate 
+
+
+## Use the AWS IoT device SDK
+
+[API documentation](http://aws-iot-device-sdk-java-docs.s3-website-us-east-1.amazonaws.com)
+
 
 ## Config file
 
